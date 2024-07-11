@@ -1,6 +1,8 @@
-import fun_CMD
-import fun_CMD.contenido_directorio 
+from fun_CMD import cambiar_json
+from fun_CMD import contenido_directorio
 
-carpeta = fun_CMD.contenido_directorio.Directorio('/home/pol/Escritorio/carpeta_prova').all_archivos()
+antigua_config = cambiar_json.cambiar_jason()
 
-print(carpeta)
+print(antigua_config)
+# carpeta = fun_CMD.contenido_directorio.Directorio('/home/pol/Escritorio/carpeta_prova').all_archivos()
+
