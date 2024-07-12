@@ -1,5 +1,6 @@
 from fun_CMD import cambiar_json
 from fun_CMD import contenido_directorio
+import json
 
 antigua_config = cambiar_json.cambiar_jason()
 

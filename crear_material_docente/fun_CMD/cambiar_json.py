@@ -22,8 +22,8 @@ def cambiar_jason():
 
     # Ruta al archivo settings.json
     # Esta es la ruta típica en Windows; ajusta según tu sistema operativo y configuración
-    settings_path = os.path.expanduser("~/.config/Code/User/settings.json")
-
+    # settings_path = os.path.expanduser("~/.config/Code/User/settings.json")
+    settings_path = os.path.expanduser("~/.vscode/settings.json")
     # Intérprete de Python que deseas establecer
     new_interpreter_path = carp
 
