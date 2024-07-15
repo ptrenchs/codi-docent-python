@@ -1,4 +1,5 @@
 import os
+import shutil
 
 class  Directorio:
 
@@ -38,19 +39,18 @@ class  Directorio:
         return carpetas_all
     
 class Filtros_formato:
-    def __init__(self, rutas, formatos_elejidos = '', formatos_eliminados = ''):
+    def __init__(self, rutas, formatos= ''):
         self.rutas = rutas
-        self.formatos_elejidos = formatos_elejidos
-        self.formatos_eliminados = formatos_eliminados
+        self.formatos = formatos
     
 
     def elejir(self):
         new_lista = []
-        if self.formatos_elejidos == '':
+        if self.formatos == '':
             return new_lista
         else:
             for ruta in self.rutas:
-                for formato in (self.formatos_elejidos.replace(' ','')).split(','):
+                for formato in (self.formatos.replace(' ','')).split(','):
                     formato_ruta = ruta.split('.')[-1]
                     if formato_ruta.lower() == formato.lower():
                         new_lista.append(ruta)
@@ -59,33 +59,33 @@ class Filtros_formato:
     
     def eliminar(self):
         new_lista = []
-        if self.formatos_eliminados == '':
+        if self.formatos == '':
             return new_lista
         else:
             for ruta in self.rutas:
-                for formato in (self.formatos_eliminados.replace(' ','')).split(','):
+                for formato in (self.formatos.replace(' ','')).split(','):
                     formato_ruta = ruta.split('.')[-1]
-                    if formato_ruta.lower() != formato.lower():
-                        new_lista.append(ruta)
+                    if formato_ruta.lower() == formato.lower():
                         break
+                if not (formato_ruta.lower() == formato.lower()):
+                    new_lista.append(ruta)
             return new_lista
 
 
 class Filtros_carpetas:
 
-    def __init__(self, rutas, carpetas_elejidas = '', carpetas_eliminadas = ''):
+    def __init__(self, rutas, carpetas = ''):
         self.rutas = rutas
-        self.carpetas_elejidas = carpetas_elejidas
-        self.carpetas_eliminadas = carpetas_eliminadas
+        self.carpetas = carpetas
 
 
     def elejir(self):
         new_lista = []
-        if self.carpetas_elejidas == '':
-            return new_lista
+        if self.carpetas == '':
+            return self.rutas
         else:
             for ruta in self.rutas:
-                for carpeta in (self.carpetas_elejidas.replace(' ','')).split(','):
+                for carpeta in (self.carpetas.replace(' ','')).split(','):
                     if '/' + carpeta +'/' in ruta:
                         new_lista.append(ruta)
                         break
@@ -93,32 +93,33 @@ class Filtros_carpetas:
         
     def eliminar(self):
         new_lista = []
-        if self.carpetas_elejidas == '':
-            return new_lista
+        if self.carpetas == '':
+            return self.rutas
         else:
             for ruta in self.rutas:
-                for carpeta in (self.carpetas_elejidas.replace(' ','')).split(','):
-                    if not ('/' + carpeta +'/' in ruta):
-                        new_lista.append(ruta)
+                for carpeta in (self.carpetas.replace(' ','')).split(','):
+                    if '/' + carpeta +'/' in ruta:
                         break
+
+                if not ('/' + carpeta +'/' in ruta):
+                    new_lista.append(ruta)
             return new_lista
         
     
         
 class Filtros_archivos:
 
-    def __init__(self, rutas, archivos_elejidos = '', archivos_eliminados = ''):
+    def __init__(self, rutas, archivos = '', archivos_eliminados = ''):
         self.rutas = rutas
-        self.archivos_elejidos = archivos_elejidos
-        self.archivos_eliminados = archivos_eliminados
+        self.archivos = archivos
 
     def elejir(self):
         new_lista = []
-        if self.archivos_elejidos == '':
+        if self.archivos == '':
             return new_lista
         else:
             for ruta in self.rutas:
-                for arch in (self.archivos_elejidos.replace(' ','')).split(','):
+                for arch in (self.archivos.replace(' ','')).split(','):
                     nombre_archivo = '.'.join(os.path.basename(ruta).split('.')[:-1])
                     if nombre_archivo == arch:
                         new_lista.append(ruta)
@@ -127,18 +128,35 @@ class Filtros_archivos:
     
     def eliminar(self):
         new_lista = []
-        if self.archivos_eliminados == '':
+        if self.archivos == '':
             return new_lista
         else:
             for ruta in self.rutas:
-                for arch in (self.archivos_eliminados.replace(' ','')).split(','):
+                for arch in (self.archivos.replace(' ','')).split(','):
                     nombre_archivo = '.'.join(os.path.basename(ruta).split('.')[:-1])
                     if nombre_archivo == arch:
-                        new_lista.append(ruta)
                         break
+                if not (nombre_archivo == arch):
+                    new_lista.append(ruta)
             return new_lista
-    
-# archivos = Directorio(ruta = '/home/pol/Escritorio/carpeta_prova').all_archivos()
-# archivos_txt = Filtros_formato(rutas=archivos,formatos_elejidos='ipynb')
 
-# print(Directorio(ruta = '/home/pol/Escritorio/carpeta_prova').archivos())
+class ordenar_directorio:
+    def __init__(self,rutas):
+        self.rutas = rutas
+
+    def ordenar(self):
+        new_lista = []
+        for ruta in self.rutas:
+            formato = ruta.split('.')[-1]
+            carpeta_archivo = ruta.split('/')[-2]
+            carpeta_formato = 'Carpeta_' + formato
+            if carpeta_archivo != carpeta_formato:
+                archivo = os.path.basename(ruta)
+                old_ruta_carp = '/'.join(ruta.split('/')[:-1])
+                new_ruta_carp = old_ruta_carp + '/' + carpeta_formato
+                os.makedirs(new_ruta_carp, exist_ok=True)
+                shutil.move(old_ruta_carp + '/' + archivo,new_ruta_carp + '/' + archivo)
+                new_lista.append(new_ruta_carp + '/' + archivo)
+            else:
+                new_lista.append(ruta)
+        return new_lista
