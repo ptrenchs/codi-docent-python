@@ -14,7 +14,7 @@ class  Directorio:
     
     def all_archivos(self):
         if type(self.ruta)==str:
-            rutas = [self.ruta]
+            rutas = (self.ruta.replace(' ','').replace('\t','')).split(',')
         archivos_all = []
         carpetas_finales = []
         while rutas != []:
@@ -27,7 +27,7 @@ class  Directorio:
     
     def all_carpetas(self):
         if type(self.ruta)==str:
-            rutas = [self.ruta]
+            rutas = (self.ruta.replace(' ','').replace('\t','')).split(',')
         carpetas_all = []
         carpetas_finales = []
         while rutas != []:

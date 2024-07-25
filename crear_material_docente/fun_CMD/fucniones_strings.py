@@ -66,6 +66,8 @@ class linea:
 
 
     def comentario(self):
+        if self.line == '':
+            return ''
         for i,car in enumerate(self.line):
             for com in self.coment.split(','):
                 if com == car:
