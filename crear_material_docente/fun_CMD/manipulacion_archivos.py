@@ -39,25 +39,26 @@ class Enunciados:
                                 if v_d != '':
                                     left = ((v_d.split('=')[0]).replace('\t','')).replace(' ','')
                                     datos_alumno['cells'][pos]['source'][i] = com + v_i + f'# Encuentra variable que debe ser {left}\n'
+                                    # datos_clase['cells'][pos]['source'][i] = com + v_i + f'# Encuentra variable que debe ser {left}\n' + v_d
                                 else:
                                     datos_alumno['cells'][pos]['source'][i] = com + v_i
                         v_i_0 = v_i
                     # print(cell['source'])
             # print(datos_alumno['cells'])
-            os.makedirs(ruta_carp_principal + '/2-carpeta_clase', exist_ok=True)
-            ruta_clase = ruta_carp_principal + '/2-carpeta_clase' + '/' + nom_format
+            os.makedirs(ruta_carp_principal + '/2-ejercicio_resuelto', exist_ok=True)
+            ruta_clase = ruta_carp_principal + '/2-ejercicio_resuelto' + '/' + nom_format
 
             with open(ruta_clase, 'w', encoding='utf-8') as nuevo_archivo:
                 json.dump(datos_clase, nuevo_archivo, ensure_ascii=False, indent=4)
 
 
-            os.makedirs(ruta_carp_principal + '/3-carpeta_enunciados', exist_ok=True)
-            ruta_alumnos = ruta_carp_principal + '/3-carpeta_enunciados' + '/' + nom_format
+            os.makedirs(ruta_carp_principal + '/3-enunciados', exist_ok=True)
+            ruta_alumnos = ruta_carp_principal + '/3-enunciados' + '/' + nom_format
 
             with open(ruta_alumnos, 'w', encoding='utf-8') as nuevo_archivo:
                 json.dump(datos_alumno, nuevo_archivo, ensure_ascii=False, indent=4)
             if self.corregir:
-                os.makedirs(ruta_carp_principal + '/4-corregir', exist_ok=True)
+                os.makedirs(ruta_carp_principal + '/4-resuelto_Alumnos', exist_ok=True)
 
 class Corregir:
     def __init__(self, rutas, corregir = False):
