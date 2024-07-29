@@ -62,7 +62,7 @@ class Material:
                 if cell['cell_type'] == 'code':
                     datos_respuestas['cells'][pos]['execution_count'] = None
                     datos_respuestas['cells'][pos]['outputs'] = []
-
+                    new_lines = []
                     for i in range(len(cell['source'])):
                         line = cell['source'][i]
                         line_class= fucniones_strings.linea(line=line)
@@ -70,9 +70,14 @@ class Material:
                         
                         if v_d != '':
                             left = ((v_d.split('=')[0]).replace('\t','')).replace(' ','')
-                            datos_respuestas['cells'][pos]['source'][i] = com + f'# Encuentra variable que debe ser {left}\n' + v_d
+                            # datos_respuestas['cells'][pos]['source'][i] = com + f'# Encuentra variable que debe ser {left}\n' + v_d
+                            new_lines.append(com + f'# Encuentra variable que debe ser {left}\n')
+                            new_lines.append(v_d)
                         else:
-                            datos_respuestas['cells'][pos]['source'][i] = com + v_i + v_v
+                            # datos_respuestas['cells'][pos]['source'][i] = com + v_i + v_v
+                            new_lines.append(com + v_i + v_v)
+                    print(new_lines)
+                    datos_respuestas['cells'][pos]['source'] = new_lines
 
             os.makedirs(ruta_carp_principal + '/2-ejercicio_resuelto', exist_ok=True)
             ruta_respuestas = ruta_carp_principal + '/2-ejercicio_resuelto' + '/' + nom_format
