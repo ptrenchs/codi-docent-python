@@ -51,34 +51,34 @@ class codigo_cifrado:
         line = codigo_cifrado(self.strings).acondicionar_strings()
         car_inicio = ''
         car_fin = ''
-        for j in range(len(line)):
+        for i in range(len(line)):
             if car_inicio == '':
-                for tip in tipos:
-                    for i in range(len(tip)):
-                        if line[j] == tip[i]:
+                for j in range(len(tipos)):
+                    for k in range(len(tipos[j])):
+                        if line[i] == tipos[j][k]:
                             break
-                    if line[j] == tip[i]:
-                        car_inicio += tip[i]
-                        inicio = j
+                    if line[i] == tipos[j][k]:
+                        car_inicio += tipos[j][k]
+                        inicio = i
                         break
             else:
-                for tip in tipos:
-                    for i in range(len(tip)):
-                        if line[j] == tip[i]:
-                            break
-                    if car_inicio[0] == tip[i]:
-                        car_inicio += tip[i]
-                    else:
-                        car_fin += tip[i-1]
+                for k in range(len(tipos[j])):
+                    if line[i] == tipos[j][k]:
                         break
+
+                if car_inicio[0] == tipos[j][k]:
+                    car_inicio += tipos[j][k]
+                elif line[i] == tipos[j][k]:
+                    car_fin += tipos[j][k]                
+
             if len(car_fin) == len(car_inicio) and len(car_inicio) != 0:
-                # print(line[inicio:j+1])
-                list_intervalos.append(line[inicio:j+1])
+                list_intervalos.append(line[inicio:i+1])
                 car_inicio = ''
                 car_fin = ''
+
         return list_intervalos
 
-strings = '(5 * 3) ** 3 / 4'
+strings = '[(5 * 3) ** 3 / (4 + 3)]'
 var = codigo_cifrado(strings = strings).extraer_variables()
 var_cod = codigo_cifrado(strings = strings, var=var).codificar_variables()
 intervalos = codigo_cifrado(strings = strings).intervalo()
