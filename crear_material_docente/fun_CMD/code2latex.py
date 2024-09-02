@@ -7,13 +7,17 @@ class codigo_cifrado:
         self.var_cif = var_cif
         self.operadores = operadores
 
+    def acondicionar_strings(self):
+        return self.strings.replace('**','^').replace('\t','').replace(' ','')
+
     def extraer_variables(self):
-        new_stirng = self.strings.replace('**','^').replace('\t','').replace(' ','')
-        if '=' in new_stirng:
-            left, rigth = new_stirng.split('=')
+        # new_stirng = self.strings.replace('**','^').replace('\t','').replace(' ','')
+        new_string = codigo_cifrado(self.strings).acondicionar_strings()
+        if '=' in new_string:
+            left, rigth = new_string.split('=')
             self.var.append(left)
         else:
-            rigth = new_stirng
+            rigth = new_string
 
         i = 0
         while i < len(rigth):
@@ -40,11 +44,48 @@ class codigo_cifrado:
                             break
                     self.var_cif.append(num)
         return self.var_cif
+    
+    def intervalo(self):
+        list_intervalos = []
+        tipos = ['[]','()','{}']
+        line = codigo_cifrado(self.strings).acondicionar_strings()
+        car_inicio = ''
+        car_fin = ''
+        for j in range(len(line)):
+            if car_inicio == '':
+                for tip in tipos:
+                    for i in range(len(tip)):
+                        if line[j] == tip[i]:
+                            break
+                    if line[j] == tip[i]:
+                        car_inicio += tip[i]
+                        inicio = j
+                        break
+            else:
+                for tip in tipos:
+                    for i in range(len(tip)):
+                        if line[j] == tip[i]:
+                            break
+                    if car_inicio[0] == tip[i]:
+                        car_inicio += tip[i]
+                    else:
+                        car_fin += tip[i-1]
+                        break
+            if len(car_fin) == len(car_inicio) and len(car_inicio) != 0:
+                # print(line[inicio:j+1])
+                list_intervalos.append(line[inicio:j+1])
+                car_inicio = ''
+                car_fin = ''
+        return list_intervalos
 
-var = codigo_cifrado(strings = '5 * 3 ** 3 / 4').extraer_variables()
-var_cod = codigo_cifrado(strings = '5 * 3 ** 3 / 4', var=var).codificar_variables()
+strings = '(5 * 3) ** 3 / 4'
+var = codigo_cifrado(strings = strings).extraer_variables()
+var_cod = codigo_cifrado(strings = strings, var=var).codificar_variables()
+intervalos = codigo_cifrado(strings = strings).intervalo()
 print(var)
 print(var_cod)
+print(intervalos)
+
     
 
             
