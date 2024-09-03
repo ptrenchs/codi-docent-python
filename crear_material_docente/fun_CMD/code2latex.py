@@ -32,7 +32,7 @@ class codigo_cifrado:
         return self.var
     
     def codificar_variables(self):
-        cifrado  = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ', '&#@$', '0123456789']
+        cifrado  = ['!?¿¡', '·$%', '|@#~']
         if len(self.var_cif) < len(self.var):
             for v in range(len(self.var_cif), len(self.var)):
                 if len(self.var_cif) == 0:
@@ -45,6 +45,28 @@ class codigo_cifrado:
                     self.var_cif.append(num)
         return self.var_cif
     
+    def cifrar_line(self):
+        inicio = 0
+        line = self.strings.replace('**','^')#codigo_cifrado(self.strings).acondicionar_strings()
+        new_line = ''
+        for i in range(len(self.var)):
+            j = len(self.var[i]) + inicio
+            while j <= len(line):
+                if line[j-len(self.var[i]):j] == self.var[i]:
+                    new_line += line[inicio:j-len(self.var[i])] + self.var_cif[i]
+                    break
+                j += 1
+            inicio = j
+        # if j == len(line) and 
+        return new_line
+                    
+class acondicionar_operaciones:
+    def __init__(self, strings, var = [], var_cif = [], operadores = '+,-,*,^,/'):
+        self.strings = strings
+        self.var = var
+        self.var_cif = var_cif
+        self.operadores = operadores
+
     def intervalo(self):
         list_intervalos = []
         tipos = ['[]','()','{}']
@@ -77,14 +99,69 @@ class codigo_cifrado:
                 car_fin = ''
 
         return list_intervalos
+    
+    def division(self):
+        secmentos_den = []
+        secmentos_num = []
+        secmentos = []
+        init_var = ''
+        line = codigo_cifrado(self.strings).acondicionar_strings()
+        for i in range(len(line)):
+            if line[i] == '/' and init_var == '':
+                init_var += line[i]
+                inicio = i
+            elif line[i] == '/':
+                init_var += line[i]
+            if 1 < len(init_var) and line[i] == '/':
+                line = [j for j in line]
+                line[i] = '*'
+                line = ''.join(line)
+            elif line[i] in '+-*':
+                init_var = ''
+                secmentos.append(line[inicio+1:i])
+        if init_var != '':
+            secmentos.append(line[inicio+1:])
+        for sec in secmentos:
+            secmentos_den.append(' { '+sec+' } ')
+            line = line.replace(sec, ' { '+sec+' } ')
 
-strings = '[(5 * 3) ** 3 / (4 + 3)]'
+        secmentos = []
+        line_reverse = line[::-1]
+        init_var = False
+        for i in range(len(line_reverse)):
+            if line_reverse[i]== '*':
+                mult_pos = i
+            if line_reverse[i] == '/' and not init_var:
+                init_var = True
+                inicio = i
+            elif init_var and line_reverse[i] in '+-':
+                secmentos.append(line_reverse[inicio+1:i])
+                init_var = False
+            elif init_var and line_reverse[i] in '/':
+                secmentos.append(line_reverse[inicio+1:mult_pos])
+                inicio = i
+        if init_var:
+            secmentos.append(line_reverse[inicio+1:])
+
+        for sec in secmentos:
+            secmentos_num.append(' { '+sec[::-1]+' } ')
+            line = line.replace(sec[::-1], ' { '+sec[::-1]+' } ')        
+        return line
+    # Se tiene que definir una fucnion para los exponentes!!!
+
+
+# strings = '(5 * 3) ** 3 / (4 + 3)'
+strings = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9'
+line = codigo_cifrado(strings = strings).acondicionar_strings()
 var = codigo_cifrado(strings = strings).extraer_variables()
 var_cod = codigo_cifrado(strings = strings, var=var).codificar_variables()
-intervalos = codigo_cifrado(strings = strings).intervalo()
-print(var)
-print(var_cod)
-print(intervalos)
+intervalos = acondicionar_operaciones(strings = strings).intervalo()
+line_cifrada = codigo_cifrado(strings = strings).cifrar_line()
+new_line = acondicionar_operaciones(strings = strings).division()
+
+# print(var)
+# print(var_cod)
+print(new_line)
 
     
 
