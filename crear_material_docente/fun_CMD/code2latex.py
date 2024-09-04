@@ -1,7 +1,7 @@
 import random
 
 class codigo_cifrado:
-    def __init__(self, strings, var = [], var_cif = [], operadores = '+,-,*,^,/'):
+    def __init__(self, strings = None, var = [], var_cif = [], operadores = '+,-,*,^,/,(,),='):
         self.strings = strings
         self.var = var
         self.var_cif = var_cif
@@ -11,24 +11,20 @@ class codigo_cifrado:
         return self.strings.replace('**','^').replace('\t','').replace(' ','')
 
     def extraer_variables(self):
-        # new_stirng = self.strings.replace('**','^').replace('\t','').replace(' ','')
-        new_string = codigo_cifrado(self.strings).acondicionar_strings()
-        if '=' in new_string:
-            left, rigth = new_string.split('=')
-            self.var.append(left)
-        else:
-            rigth = new_string
-
-        i = 0
-        while i < len(rigth):
-            for op in (self.operadores.replace(' ','').replace('\t','')).split(','):
-                if rigth[i] == op:
-                    break
-            if rigth[i] == op:
-                rigth = rigth[:i] + '$@#$' + rigth[i+1:]
-                i += len('$@#$')
-            i += 1
-        [self.var.append(i) for i in rigth.split('$@#$')]
+        new_string = self.strings
+        inicio = 0
+        for i in range(len(new_string)):
+            if new_string[i] in  (self.operadores.replace(' ','').replace('\t','')).split(','):
+                if inicio != 0:
+                    segmento = new_string[inicio+1:i].replace('\t','').replace(' ','')
+                else:
+                    segmento = new_string[inicio:i].replace('\t','').replace(' ','')
+                if segmento != '' and segmento not in self.var_cif:
+                    self.var.append(segmento)
+                inicio = i
+        segmento = new_string[inicio+1:].replace('\t','').replace(' ','')
+        if segmento != '' and segmento not in self.var_cif:
+            self.var.append(segmento)
         return self.var
     
     def codificar_variables(self):
@@ -48,16 +44,21 @@ class codigo_cifrado:
     def cifrar_line(self):
         inicio = 0
         line = self.strings.replace('**','^')#codigo_cifrado(self.strings).acondicionar_strings()
+        if self.var == []:
+            codigo_cifrado(var=codigo_cifrado(strings = line).extraer_variables()).codificar_variables()
         new_line = ''
         for i in range(len(self.var)):
             j = len(self.var[i]) + inicio
             while j <= len(line):
                 if line[j-len(self.var[i]):j] == self.var[i]:
                     new_line += line[inicio:j-len(self.var[i])] + self.var_cif[i]
+                    inicio = j
                     break
                 j += 1
-            inicio = j
+            
         # if j == len(line) and 
+        if j!=len(line):
+            new_line += line[j:]
         return new_line
                     
 class acondicionar_operaciones:
@@ -69,8 +70,8 @@ class acondicionar_operaciones:
 
     def intervalo(self):
         list_intervalos = []
-        tipos = ['[]','()','{}']
-        line = codigo_cifrado(self.strings).acondicionar_strings()
+        tipos = ['[]','()']
+        line = self.strings.replace('**','^') # codigo_cifrado(self.strings).acondicionar_strings()
         car_inicio = ''
         car_fin = ''
         for i in range(len(line)):
@@ -122,8 +123,8 @@ class acondicionar_operaciones:
         if init_var != '':
             secmentos.append(line[inicio+1:])
         for sec in secmentos:
-            secmentos_den.append(' { '+sec+' } ')
-            line = line.replace(sec, ' { '+sec+' } ')
+            secmentos_den.append('( '+sec+' )')
+            line = line.replace(sec, '( '+sec+' )')
 
         secmentos = []
         line_reverse = line[::-1]
@@ -145,26 +146,73 @@ class acondicionar_operaciones:
 
         for sec in secmentos:
             secmentos_num.append(' { '+sec[::-1]+' } ')
-            line = line.replace(sec[::-1], ' { '+sec[::-1]+' } ')        
+            line = line.replace(sec[::-1], '\\frac{ '+sec[::-1]+' }')        
         return line
     # Se tiene que definir una fucnion para los exponentes!!!
+    def exponenete(self):
+        segmento = []
+        init_exp = False
+        line = self.strings.replace('**','^')
+        for i in range(len(line)):
+            if line[i] == '^' and not init_exp:
+                inicio = i
+                init_exp = True
+            elif init_exp and line[i] in '/*':
+                segmento.append(line[inicio+1:i-1])
+                init_exp = False
+            elif init_exp and line[i] in '+-':
+                if line[i-1] != '^':
+                    # print(line[inicio+1:i])
+                    segmento.append(line[inicio+1:i])
+                    init_exp = False
+        if init_exp:
+            segmento.append(line[inicio+1:])
+        for seg  in segmento:
+            line = line.replace(seg, '( ' + seg + ' )')
+        return line
+
+
 
 
 # strings = '(5 * 3) ** 3 / (4 + 3)'
-strings = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9'
-line = codigo_cifrado(strings = strings).acondicionar_strings()
-var = codigo_cifrado(strings = strings).extraer_variables()
-var_cod = codigo_cifrado(strings = strings, var=var).codificar_variables()
-intervalos = acondicionar_operaciones(strings = strings).intervalo()
-line_cifrada = codigo_cifrado(strings = strings).cifrar_line()
-new_line = acondicionar_operaciones(strings = strings).division()
+line = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4) ^ -5 ^ 7 + (88 + 99) / (100 +4) + 40 ^ 5'
+cifrado = []
+no_cifrado = []
 
+
+print(line)
+# line = codigo_cifrado(strings = strings).acondicionar_strings()
+no_cifrado += codigo_cifrado(strings = line,var = no_cifrado, var_cif = cifrado).extraer_variables()
+cifrado += codigo_cifrado(strings = line, var = no_cifrado, var_cif = cifrado).codificar_variables()
+line = codigo_cifrado(strings = line, var = no_cifrado, var_cif = cifrado).cifrar_line()
+
+segmentos = []
+segmentos_cifrados = []
+
+segmentos += acondicionar_operaciones(strings = line).intervalo()
+segmentos_cifrados += codigo_cifrado(strings = line, var = segmentos, var_cif= segmentos_cifrados).codificar_variables()
+line = codigo_cifrado(strings = line, var = segmentos, var_cif = segmentos_cifrados).cifrar_line()
+print(line)
+line = acondicionar_operaciones(strings = line).division()
+print(line)
+segmentos += acondicionar_operaciones(strings = line).intervalo()
+segmentos_cifrados += codigo_cifrado(strings = line, var = segmentos, var_cif = segmentos_cifrados).codificar_variables()
+line = codigo_cifrado(strings = line, var = segmentos, var_cif = segmentos_cifrados).cifrar_line()
+print(line)
+line = acondicionar_operaciones(strings = line).exponenete()
+segmentos += acondicionar_operaciones(strings = line).intervalo()
+segmentos_cifrados += codigo_cifrado(strings = line, var = segmentos, var_cif = segmentos_cifrados).codificar_variables()
+line = codigo_cifrado(strings = line, var = segmentos, var_cif = segmentos_cifrados).cifrar_line()
+
+print(line)
 # print(var)
 # print(var_cod)
-print(new_line)
+# print(intervalos)
+# print(intervalos_cifrados)
+# print(line)
 
     
-
+# ¡¡¡ Se tiene que hacer una funcion para especificar que es parentesisi i que es corchete !!!
             
 
 
