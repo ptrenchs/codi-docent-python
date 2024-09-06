@@ -51,7 +51,7 @@ class codigo_cifrado:
         return self.var
     
     def codificar_variables(self):
-        cifrado  = ['!?¿¡', '·$%', '|@#~']
+        cifrado  = ['!?¿¡', '·$%', '|@#~', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz']
         if len(self.var_cif) < len(self.var):
             for v in range(len(self.var_cif), len(self.var)):
                 if len(self.var_cif) == 0:
@@ -83,9 +83,10 @@ class codigo_cifrado:
                 
             # if j == len(line) and 
             if j!=len(line):
-                new_line += line[j:]
+                new_line += line[inicio:]
         if inicio == 0:
             new_line = line
+
         return new_line
                     
 class acondicionar_operaciones:
@@ -116,34 +117,42 @@ class acondicionar_operaciones:
         list_intervalos = []
         tipos = ['()']
         line = self.strings # codigo_cifrado(self.strings).acondicionar_strings()
-        car_inicio = ''
-        car_fin = ''
-        for i in range(len(line)):
-            if car_inicio == '':
-                for j in range(len(tipos)):
+        # print(line)
+        inicio = 0
+        if '(' in line:
+            car_inicio = ''
+            car_fin = ''
+            for i in range(len(line)):
+                if car_inicio == '':
+                    for j in range(len(tipos)):
+                        for k in range(len(tipos[j])):
+                            if line[i] == tipos[j][k]:
+                                break
+                        if line[i] == tipos[j][k]:
+                            car_inicio += tipos[j][k]
+                            inicio = i
+                            break
+                else:
                     for k in range(len(tipos[j])):
                         if line[i] == tipos[j][k]:
                             break
-                    if line[i] == tipos[j][k]:
+
+                    if car_inicio[0] == tipos[j][k]:
                         car_inicio += tipos[j][k]
-                        inicio = i
-                        break
-            else:
-                for k in range(len(tipos[j])):
-                    if line[i] == tipos[j][k]:
-                        break
+                    elif line[i] == tipos[j][k]:
+                        car_fin += tipos[j][k]                
 
-                if car_inicio[0] == tipos[j][k]:
-                    car_inicio += tipos[j][k]
-                elif line[i] == tipos[j][k]:
-                    car_fin += tipos[j][k]                
-
-            if len(car_fin) == len(car_inicio) and len(car_inicio) != 0 and line[inicio:i+1] != '':
-                list_intervalos.append(line[inicio:i+1])
-                car_inicio = ''
-                car_fin = ''
-
+                if len(car_fin) == len(car_inicio) and len(car_inicio) != 0 and line[inicio:i+1] != '':
+                    # print(line[inicio:i+1])
+                    list_intervalos.append(line[inicio:i+1])
+                    car_inicio = ''
+                    car_fin = ''
+        if inicio != 0:
+            list_intervalos.append(line[inicio:])
+        # print(list_intervalos)
         return list_intervalos
+    
+    
     
     def division(self):
         segmentos_den = []
@@ -162,12 +171,13 @@ class acondicionar_operaciones:
                     line = [j for j in line]
                     line[i] = '*'
                     line = ''.join(line)
-                elif line[i] in '+-*' and line[inicio+1:i] != '':
+                elif init_var != '' and line[i] in '+-*=' and line[inicio+1:i] != '':
                     init_var = ''
                     segmentos.append(line[inicio+1:i])
             if init_var != '' and line[inicio+1:] != '':
                 segmentos.append(line[inicio+1:])
             for seg in segmentos:
+                # print(seg)
                 seg = areglar_strings(seg).eliminar_espacios_laterales()
                 segmentos_den.append('{ '+seg+' }')
                 line = line.replace(seg, '{ '+seg+' }')
@@ -181,7 +191,7 @@ class acondicionar_operaciones:
                 if line_reverse[i] == '/' and not init_var:
                     init_var = True
                     inicio = i
-                elif init_var and line_reverse[i] in '+-' and line_reverse[inicio+1:i] != '':
+                elif init_var and line_reverse[i] in '+-=' and line_reverse[inicio+1:i] != '':
                     segmentos.append(line_reverse[inicio+1:i])
                     init_var = False
                 elif init_var and line_reverse[i] in '/' and line_reverse[inicio+1:mult_pos] != '':
@@ -237,67 +247,120 @@ class acondicionar_operaciones:
 
 
 # strings = '(5 * 3) ** 3 / (4 + 3)'
-line_old = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 * (3+2)) ^ -5 ^ 7 + (88 + 99) / (100 +4) + 40 ^ 5'
+# line_old = 'r = 50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 * (3+2)) ^ -5 ^ (7/(40 + 50)) + (88 + 99) / (100 +4) + 40 ^ 5'
 # line_old = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 ) ^ -5 ^ 7 + (88 + 99) / (100 +4) + 40 ^ 5'
+line_old = 'zth3 = (zt1 +zg1) * (zl+rc*(zt2+zg2)/(rc + (zt2+zg2))) / ((zt1 +zg1) + (zl +rc*(zt2+zg2)/(rc + (zt2+zg2))))'
 cifrado = []
 no_cifrado = []
+# print(line_old)
 
 
-print(line_old)
 # line = codigo_cifrado(strings = strings).acondicionar_strings()
 no_cifrado += codigo_cifrado(strings = line_old,var = no_cifrado, var_cif = cifrado).extraer_variables()
 cifrado += codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).codificar_variables()
 line_cif = codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).cifrar_line()
-segmentos = [line_cif]#[i for i in no_cifrado]
-segmentos_cifrados = []#[i for i in cifrado]
+segmentos = [line_cif]
 
+# print(no_cifrado)
+segmentos_provisionales = []
 while True:
     # segmentos = []#[i for i in no_cifrado]
     # segmentos_cifrados = []#[i for i in cifrado]
     new_segmentos = []
+    segmentos_cifrados = []
     for seg in segmentos:
         line = seg
         new_segmentos += acondicionar_operaciones(strings = line).intervalo()
-        print(new_segmentos)
-        segmentos_cifrados += codigo_cifrado(strings = line, var = new_segmentos, var_cif= segmentos_cifrados, otras_listas = cifrado).codificar_variables()
+        # print(new_segmentos)
+        segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif= segmentos_cifrados, otras_listas = cifrado).codificar_variables()
         line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
+        # print(line)
         line = acondicionar_operaciones(strings = line).division()
-
-        new_segmentos += acondicionar_operaciones(strings = line).intervalo()
-        segmentos_cifrados += codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
+        
+        # new_segmentos += acondicionar_operaciones(strings = line).intervalo()
+        segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
         line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
         line = acondicionar_operaciones(strings = line).exponenete()
 
-        new_segmentos += acondicionar_operaciones(strings = line).intervalo()
-        # print(new_segmentos)
-        segmentos_cifrados += codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
+        # new_segmentos += acondicionar_operaciones(strings = line).intervalo()
+        
+        segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
         line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
-        line = line.replace(' / ','')
-        line = line.replace('*','\\cdot')
-        print(seg)
-        print(line)
+        # line = line.replace(' / ','')
+        # line = line.replace('*','\\cdot')
         line_cif = line_cif.replace(seg,line)
-        for j in range(len(new_segmentos)):
-            line_cif = line_cif.replace(segmentos_cifrados[j],new_segmentos[j])
+    #     print(segmentos_cifrados)
+
+    # print('\n')
+    # print(segmentos_cifrados)
+    # print(line_cif)
+    # print('\n')
+    for j in range(len(new_segmentos)):      
+        line_cif = line_cif.replace(segmentos_cifrados[j],new_segmentos[j])
+ 
     
-    segmentos = []
+    
+    segmentos_provisionales = []
     for seg in new_segmentos:
-        for car in seg:
-            if car in '*/^':
-                break
-        if car in '*/^':
-            segmentos.append(seg)
+        if seg not in segmentos:
+            for car in seg:
+                if car in '*/^':
+                    break
+        if car in '*/^' and seg not in segmentos:
+            segmentos_provisionales.append(seg[1:-1])
+    segmentos = segmentos_provisionales
             
     if segmentos == []:
         break
     else:
-        segmentos = []#[i for i in no_cifrado]
-        segmentos_cifrados = []#[i for i in cifrado]
-    # for i in range(len(segmentos)):
-    #     line_cif = line_cif.replace(segmentos_cifrados[i],segmentos[i])
+        segmentos_cifrados = []
+
 for i in range(len(no_cifrado)):
     line_cif = line_cif.replace(cifrado[i],no_cifrado[i])
-print(line_cif)
 
+
+line_cif = line_cif.replace(' / ','/')
+
+segmentos = []
+for pos in [i for i in range(len(line_cif)) if line_cif[i] == '/']:
+    pos_num_in = pos
+    pos_num_fin = pos
+    
+    corchetes_opne = ''
+    corchetes_close = ''
+    while pos_num_in:
+        if line_cif[pos_num_in] == '{':
+            corchetes_opne += line_cif[pos_num_in]
+        if line_cif[pos_num_in] == '}':
+            corchetes_close += line_cif[pos_num_in]
+        if len(corchetes_opne) == len(corchetes_close) and len(corchetes_opne) != 0:
+            segmentos.append(areglar_strings(line_cif[pos_num_in+1:pos_num_fin-1]).eliminar_espacios_laterales())
+            break
+        pos_num_in -= 1
+
+    pos_den_in = pos
+    pos_den_fin = pos
+    corchetes_opne = ''
+    corchetes_close = ''
+    while pos_num_in:
+        if line_cif[pos_den_fin] == '}':
+            corchetes_close += line_cif[pos_den_fin]
+        if line_cif[pos_den_fin] == '{':
+            corchetes_opne += line_cif[pos_den_fin]
+        if len(corchetes_opne) == len(corchetes_close) and len(corchetes_opne) != 0:
+            segmentos.append(areglar_strings(line_cif[pos_den_in+2:pos_den_fin]).eliminar_espacios_laterales())
+            break   
+        pos_den_fin += 1
+for seg in segmentos:
+    if seg[0] == '(' and seg[-1] == ')' and len([i for i in seg if i in '*/^']) == 0:
+        line_cif = line_cif.replace(seg,seg[1:-1])
+print(line_cif)
+line_cif = areglar_strings(line_cif.replace('/','')).eliminar_espacios_laterales()
+line_cif = line_cif.replace('(','\\left(')
+line_cif = line_cif.replace(')','\\right)')
+line_cif = line_cif.replace('*','\\cdot')
+print(line_old)
+print(line_cif)        
 
 # mirar la funcion codificar variables
+# zth3 = \frac{ ( zt1 + zg1 ) * (zl + \frac{ rc * ( zt2 + zg2 ) }/{  rc + ( zt2 + zg2 )  }) }/{ (( zt1 + zg1 ) + (zl + \frac{ rc * ( zt2 + zg2 ) }/{  rc + ( zt2 + zg2 )  })) }
