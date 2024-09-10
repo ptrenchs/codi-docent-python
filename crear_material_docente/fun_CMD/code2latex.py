@@ -7,6 +7,9 @@ class areglar_strings:
     
     def eliminar_espacios_laterales(self):
         new_strings = self.strings
+        # print([new_strings])
+        if new_strings == '':
+            return new_strings
         for i in (self.operadores.replace(' ','').replace('\t','')).split(','):
             new_strings = new_strings.replace(i, ' ' + i + ' ')
         while True:
@@ -32,7 +35,7 @@ class codigo_cifrado:
         self.var = var
         self.var_cif = var_cif
         self.otras_listas = otras_listas
-        self.operadores = operadores
+        self.operadores = operadores.replace(' ','').replace('\t','').split(',')
 
     def acondicionar_strings(self):
         return self.strings.replace('\t','').replace(' ','')
@@ -42,12 +45,12 @@ class codigo_cifrado:
         new_string = self.strings
         inicio = 0
         for i in range(len(new_string)):
-            if new_string[i] in  (self.operadores.replace(' ','').replace('\t','')).split(','):
+            if new_string[i] in  self.operadores:
                 if inicio != 0:
                     segmento = new_string[inicio+1:i].replace('\t','').replace(' ','')
                 else:
                     segmento = new_string[inicio:i].replace('\t','').replace(' ','')
-                if segmento != '' and segmento not in self.var_cif:
+                if segmento != '' and segmento not in self.var_cif and segmento not in  self.operadores:
                     self.var.append(segmento)
                 inicio = i
         segmento = new_string[inicio+1:].replace('\t','').replace(' ','')
@@ -94,87 +97,7 @@ class codigo_cifrado:
 
         return new_line
     
-class latex:
 
-    def __init__(self, var = [], sub_indices = []):
-        if type(var) == str:
-            var = var.replace(' ','').replace('\t', '').split(',')
-        
-        if type(sub_indices) == str:
-            sub_indices = sub_indices.replace(' ','').replace('\t', '').split(',') 
-        self.sub_indices = sorted(sub_indices,key= lambda x: len(x),reverse=True)
-        self.var = var
-
-
-
-    def acondicionar_var(strings,sub_indices):
-        strings_provisional = strings
-        inicio = 0
-        new_strings = ''
-        seguencia = []
-        for i in range(len(strings_provisional)):
-            if strings_provisional[i].isnumeric():
-                seguencia.append('num')
-            if strings_provisional[i].islower():
-                seguencia.append('min')
-            if strings_provisional[i].isupper():
-                seguencia.append('may')
-            if 1 < len(seguencia):
-                if 'num' in seguencia and len(seguencia) != len([1 for sec in seguencia if sec == 'num']):
-
-                    new_strings = strings_provisional[inicio:i] + '_'
-                    seguencia = seguencia[1:]
-                    inicio = i
-                else:
-                    if 2 < len(seguencia):
-                        if 2 * 'min' == ''.join(seguencia[:-1]) and seguencia[-1] == 'may':
-                            new_strings = strings_provisional[inicio:i] + '_'
-                            seguencia = seguencia[2:]
-                            inicio = i
-                        elif 2 * 'may' == ''.join(seguencia[:-1]) and seguencia[-1] == 'min':
-                            new_strings = strings_provisional[inicio:i] + '_'
-                            seguencia = seguencia[2:]
-                            inicio = i
-                        else:
-                            seguencia = seguencia[1:]
-
-        strings_provisional = new_strings + strings_provisional[inicio:]
-        print(strings_provisional)
-
-        realizados = strings.split('_')
-        if len(realizados) <= 1:
-            realizados = []
-        for sub in sub_indices:
-            if sub in strings_provisional and len([1 for real in realizados if sub in real]) == 0:
-                realizados.append(sub)
-                new_strings = ''
-                for i in range(len(sub),len(strings_provisional)):
-                    if strings_provisional[i-len(sub):i] == sub:
-                        if i == len(sub)-1:
-                            new_strings = strings_provisional[i-len(sub):i] + '_'
-                        elif strings[i-1] != '_':
-                            new_strings +=  '_' + strings_provisional[i-len(sub):i]
-                            fin = i
-                new_strings += strings_provisional[fin:]
-                strings_provisional = new_strings
-        return strings_provisional
-    
-    def var2latex(self):
-        var_latex = []
-        for var in self.var:
-            # print(var)
-            try:
-                eval(var)
-                if var in ('1j','1i'):
-                    var_latex.append('i')
-                elif 'i' in var or 'j' in var:
-                    var_latex.append(var.replace('i','') + ' * i')
-                else:
-                    var_latex(var)
-            except:
-                var_latex.append(latex.acondicionar_var(strings = var, sub_indices = self.sub_indices))
-
-        return var_latex
                     
 class acondicionar_operaciones:
 
@@ -294,6 +217,7 @@ class acondicionar_operaciones:
 
             for seg in segmentos:
                 seg = areglar_strings(seg).eliminar_espacios_laterales()
+                # print(seg)
                 segmentos_num.append(' { '+seg[::-1]+' } ')
                 line = line.replace(seg[::-1], '\\frac{ '+seg[::-1]+' }')  
 
@@ -325,138 +249,206 @@ class acondicionar_operaciones:
                 # print(line[inicio+1:])
                 segmento.append(line[inicio+1:])
             for seg  in segmento:
+                # print(seg)
                 seg = areglar_strings(seg).eliminar_espacios_laterales()
                 line = line.replace(seg, '{ ' + seg.replace('^','^ {') + ' }' +''.join([' }' for i in seg if i == '^']))
-                # if len([' }' for i in seg if i == '^']) == 0:
-                #     line = line.replace(seg, '{ ' + seg.replace('^','^ {') + ' }')
-                # else:
-                #     line = line.replace(seg, '{ ' + seg.replace('^','^ {') + ''.join([' }' for i in seg if i == '^']))
-                # line = line.replace(seg, '{ ' + seg + ' }')
+
             # print(line)
         return line
+    
+class latex:
+
+    def __init__(self, var = [], sub_indices = []):
+        if type(var) == str:
+            var = var.replace(' ','').replace('\t', '').split(',')
+        
+        if type(sub_indices) == str:
+            sub_indices = sub_indices.replace(' ','').replace('\t', '').split(',') 
+        self.sub_indices = sorted(sub_indices,key= lambda x: len(x),reverse=True)
+        self.var = var
 
 
 
+    def acondicionar_var(strings,sub_indices):
+        strings_provisional = strings
+        inicio = 0
+        new_strings = ''
+        seguencia = []
+        for i in range(len(strings_provisional)):
+            if strings_provisional[i].isnumeric():
+                seguencia.append('num')
+            if strings_provisional[i].islower():
+                seguencia.append('min')
+            if strings_provisional[i].isupper():
+                seguencia.append('may')
+            if strings_provisional[i] == '_':
+                seguencia = []
+            if 1 < len(seguencia):
+                if 'num' in seguencia and len(seguencia) != len([1 for sec in seguencia if sec == 'num']):
+
+                    new_strings = strings_provisional[inicio:i] + '_'
+                    seguencia = seguencia[1:]
+                    inicio = i
+                else:
+                    if 2 < len(seguencia):
+                        if 2 * 'min' == ''.join(seguencia[:-1]) and seguencia[-1] == 'may':
+                            new_strings = strings_provisional[inicio:i] + '_'
+                            seguencia = seguencia[2:]
+                            inicio = i
+                        elif 2 * 'may' == ''.join(seguencia[:-1]) and seguencia[-1] == 'min':
+                            new_strings = strings_provisional[inicio:i] + '_'
+                            seguencia = seguencia[2:]
+                            inicio = i
+                        else:
+                            seguencia = seguencia[1:]
+
+        strings_provisional = new_strings + strings_provisional[inicio:]
+        # print([strings_provisional])
+
+        realizados = strings.split('_')
+        if len(realizados) <= 1:
+            realizados = []
+        for sub in sub_indices:
+            if sub in strings_provisional and len([1 for real in realizados if sub in real]) == 0:
+                realizados.append(sub)
+                new_strings = ''
+                inicio = 0
+                for i in range(len(sub),len(strings_provisional)):
+                    if strings_provisional[i-len(sub):i] == sub:
+                        if strings[i-1] != '_':
+                            new_strings += strings_provisional[inicio:i-len(sub)] + '_' + strings_provisional[i-len(sub):i]
+                            inicio = i
+                        if i < len(strings_provisional)-2:
+                            if strings[i+1] != '_':
+                                new_strings += '_'
+                new_strings += strings_provisional[inicio:]
+                strings_provisional = new_strings
+        
+        # print(strings_provisional)
+        return strings_provisional.replace('_','_{') + len([1 for i in strings_provisional if i == '_']) * '}'
+    
+    def var2latex(self):
+        var_latex = []
+        for var in self.var:
+            # print(var)
+            try:
+                eval(var)
+                if var in ('1j','1i'):
+                    var_latex.append('i')
+                elif 'i' in var or 'j' in var:
+                    var_latex.append(var.replace('i','') + ' * i')
+                else:
+                    var_latex(var)
+            except:
+                var_latex.append(latex.acondicionar_var(strings = var, sub_indices = self.sub_indices))
+
+        return var_latex
+
+    def code2latex(line_old,sub_ind):
+        cifrado = []
+        no_cifrado = []
+
+        no_cifrado += codigo_cifrado(strings = line_old,var = no_cifrado, var_cif = cifrado).extraer_variables()
+        cifrado += codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).codificar_variables()
+        var_latex = latex(var = no_cifrado,sub_indices = sub_ind).var2latex()
+        line_cif = codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).cifrar_line()
+        segmentos = [line_cif]
+
+        segmentos_provisionales = []
+        while True:
+
+            new_segmentos = []
+            segmentos_cifrados = []
+
+            for seg in segmentos:
+                line = seg
+                new_segmentos += acondicionar_operaciones(strings = line).intervalo()
+                segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif= segmentos_cifrados, otras_listas = cifrado).codificar_variables()
+                line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
+                line = acondicionar_operaciones(strings = line).division()
+                segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
+                line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
+                line = acondicionar_operaciones(strings = line).exponenete()        
+                segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
+                line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
+                line_cif = line_cif.replace(seg,line)
+
+            for j in range(len(new_segmentos)):      
+                line_cif = line_cif.replace(segmentos_cifrados[j],new_segmentos[j])
+        
+            segmentos_provisionales = []
+
+            for seg in new_segmentos:
+                if seg not in segmentos:
+                    for car in seg:
+                        if car in '*/^':
+                            break
+                if car in '*/^' and seg not in segmentos:
+                    segmentos_provisionales.append(seg[1:-1])
+            segmentos = segmentos_provisionales
+                    
+            if segmentos == []:
+                break
+            else:
+                segmentos_cifrados = []
+
+        for i in range(len(no_cifrado)):
+            line_cif = line_cif.replace(cifrado[i],var_latex[i])
+
+        line_cif = line_cif.replace(' / ','/')
+        
+        segmentos = []
+        for pos in [i for i in range(len(line_cif)) if line_cif[i] == '/']:
+            pos_num_in = pos
+            pos_num_fin = pos
+            
+            corchetes_opne = ''
+            corchetes_close = ''
+            while pos_num_in:
+                if line_cif[pos_num_in] == '{':
+                    corchetes_opne += line_cif[pos_num_in]
+                if line_cif[pos_num_in] == '}':
+                    corchetes_close += line_cif[pos_num_in]
+                if len(corchetes_opne) == len(corchetes_close) and len(corchetes_opne) != 0 and line_cif[pos_num_in+1:pos_num_fin-1] != '':
+                    segmentos.append(areglar_strings(line_cif[pos_num_in+1:pos_num_fin-1]).eliminar_espacios_laterales())
+                    break
+                pos_num_in -= 1
+
+            pos_den_in = pos
+            pos_den_fin = pos
+            corchetes_opne = ''
+            corchetes_close = ''
+            while pos_num_in:
+                if line_cif[pos_den_fin] == '}':
+                    corchetes_close += line_cif[pos_den_fin]
+                if line_cif[pos_den_fin] == '{':
+                    corchetes_opne += line_cif[pos_den_fin]
+                if len(corchetes_opne) == len(corchetes_close) and len(corchetes_opne) != 0 and line_cif[pos_den_in+2:pos_den_fin] != '':
+                    segmentos.append(areglar_strings(line_cif[pos_den_in+2:pos_den_fin]).eliminar_espacios_laterales())
+                    break   
+                pos_den_fin += 1
+        
+        for seg in segmentos:
+            if seg[0] == '(' and seg[-1] == ')' and len([i for i in seg if i in '*/^']) == 0:
+                line_cif = line_cif.replace(seg,seg[1:-1])
+        line_cif = areglar_strings(line_cif.replace('/','')).eliminar_espacios_laterales()
+        line_cif = line_cif.replace('(','\\left(')
+        line_cif = line_cif.replace(')','\\right)')
+        line_cif = line_cif.replace('*','\\cdot')
+        # print(no_cifrado)
+        # print(cifrado)
+        # print(var_latex)
+        return line_cif
 
 # strings = '(5 * 3) ** 3 / (4 + 3)'
 # line_old = 'r = 50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 * (3+2)) ^ -5 ^ (7/(40 + 50)) + (88 + 99) / (100 +4) + 40 ^ 5'
 # line_old = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 ) ^ -5 ^ 7 + (88 + 99) / (100 +4) + 40 ^ 5'
-line_old = 'zth3 = (zt1 +zg1) * (zl+rc*(zt2+zg2)/(rc + (zt2+zg2))) / ((zt1 +zg1) + (zl +rc*(zt2+zg2)/(rc + (zt2+zg2))))'
-
+# line_old = 'zth3 = (z_t1 +z_g1) * (z_l+r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))) / ((z_t1 +z_g1) + (z_l +r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))))'
+# line_old = '((ar**2+r**2)/2)**0.5'
+# print('$$ ' + latex.code2latex(line_old, 'th,g,t') + ' $$')
 # ---------------------------------------------------------
-cifrado = []
-no_cifrado = []
-# print(line_old)
 
-
-# line = codigo_cifrado(strings = strings).acondicionar_strings()
-no_cifrado += codigo_cifrado(strings = line_old,var = no_cifrado, var_cif = cifrado).extraer_variables()
-cifrado += codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).codificar_variables()
-var_latex = latex(var = no_cifrado,sub_indices = 't,g').var2latex()
-print(var_latex)
-line_cif = codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).cifrar_line()
-segmentos = [line_cif]
-
-# # print(no_cifrado)
-# segmentos_provisionales = []
-# while True:
-#     # segmentos = []#[i for i in no_cifrado]
-#     # segmentos_cifrados = []#[i for i in cifrado]
-#     new_segmentos = []
-#     segmentos_cifrados = []
-#     for seg in segmentos:
-#         line = seg
-#         new_segmentos += acondicionar_operaciones(strings = line).intervalo()
-#         # print(new_segmentos)
-#         segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif= segmentos_cifrados, otras_listas = cifrado).codificar_variables()
-#         line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
-#         # print(line)
-#         line = acondicionar_operaciones(strings = line).division()
-        
-#         # new_segmentos += acondicionar_operaciones(strings = line).intervalo()
-#         segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
-#         line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
-#         line = acondicionar_operaciones(strings = line).exponenete()
-
-#         # new_segmentos += acondicionar_operaciones(strings = line).intervalo()
-        
-#         segmentos_cifrados = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados, otras_listas = cifrado).codificar_variables()
-#         line = codigo_cifrado(strings = line, var = new_segmentos, var_cif = segmentos_cifrados).cifrar_line()
-#         # line = line.replace(' / ','')
-#         # line = line.replace('*','\\cdot')
-#         line_cif = line_cif.replace(seg,line)
-#     #     print(segmentos_cifrados)
-
-#     # print('\n')
-#     # print(segmentos_cifrados)
-#     # print(line_cif)
-#     # print('\n')
-#     for j in range(len(new_segmentos)):      
-#         line_cif = line_cif.replace(segmentos_cifrados[j],new_segmentos[j])
- 
-    
-    
-#     segmentos_provisionales = []
-#     for seg in new_segmentos:
-#         if seg not in segmentos:
-#             for car in seg:
-#                 if car in '*/^':
-#                     break
-#         if car in '*/^' and seg not in segmentos:
-#             segmentos_provisionales.append(seg[1:-1])
-#     segmentos = segmentos_provisionales
-            
-#     if segmentos == []:
-#         break
-#     else:
-#         segmentos_cifrados = []
-
-# for i in range(len(no_cifrado)):
-#     line_cif = line_cif.replace(cifrado[i],no_cifrado[i])
-
-
-# line_cif = line_cif.replace(' / ','/')
-
-# segmentos = []
-# for pos in [i for i in range(len(line_cif)) if line_cif[i] == '/']:
-#     pos_num_in = pos
-#     pos_num_fin = pos
-    
-#     corchetes_opne = ''
-#     corchetes_close = ''
-#     while pos_num_in:
-#         if line_cif[pos_num_in] == '{':
-#             corchetes_opne += line_cif[pos_num_in]
-#         if line_cif[pos_num_in] == '}':
-#             corchetes_close += line_cif[pos_num_in]
-#         if len(corchetes_opne) == len(corchetes_close) and len(corchetes_opne) != 0:
-#             segmentos.append(areglar_strings(line_cif[pos_num_in+1:pos_num_fin-1]).eliminar_espacios_laterales())
-#             break
-#         pos_num_in -= 1
-
-#     pos_den_in = pos
-#     pos_den_fin = pos
-#     corchetes_opne = ''
-#     corchetes_close = ''
-#     while pos_num_in:
-#         if line_cif[pos_den_fin] == '}':
-#             corchetes_close += line_cif[pos_den_fin]
-#         if line_cif[pos_den_fin] == '{':
-#             corchetes_opne += line_cif[pos_den_fin]
-#         if len(corchetes_opne) == len(corchetes_close) and len(corchetes_opne) != 0:
-#             segmentos.append(areglar_strings(line_cif[pos_den_in+2:pos_den_fin]).eliminar_espacios_laterales())
-#             break   
-#         pos_den_fin += 1
-# for seg in segmentos:
-#     if seg[0] == '(' and seg[-1] == ')' and len([i for i in seg if i in '*/^']) == 0:
-#         line_cif = line_cif.replace(seg,seg[1:-1])
-# print(line_cif)
-# line_cif = areglar_strings(line_cif.replace('/','')).eliminar_espacios_laterales()
-# line_cif = line_cif.replace('(','\\left(')
-# line_cif = line_cif.replace(')','\\right)')
-# line_cif = line_cif.replace('*','\\cdot')
-# print(line_old)
-# print(line_cif)        
+    # 
 
 # # mirar la funcion codificar variables
 # # zth3 = \frac{ ( zt1 + zg1 ) * (zl + \frac{ rc * ( zt2 + zg2 ) }/{  rc + ( zt2 + zg2 )  }) }/{ (( zt1 + zg1 ) + (zl + \frac{ rc * ( zt2 + zg2 ) }/{  rc + ( zt2 + zg2 )  })) }
