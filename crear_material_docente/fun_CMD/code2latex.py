@@ -263,7 +263,8 @@ class latex:
             var = var.replace(' ','').replace('\t', '').split(',')
         
         if type(sub_indices) == str:
-            sub_indices = sub_indices.replace(' ','').replace('\t', '').split(',') 
+            sub_indices = sub_indices.replace(' ','').replace('\t', '').split(',')
+        sub_indices = [i for i in sub_indices if i != '']
         self.sub_indices = sorted(sub_indices,key= lambda x: len(x),reverse=True)
         self.var = var
 
@@ -283,21 +284,21 @@ class latex:
                 seguencia.append('may')
             if strings_provisional[i] == '_':
                 seguencia = []
+            # print(seguencia)
             if 1 < len(seguencia):
                 if 'num' in seguencia and len(seguencia) != len([1 for sec in seguencia if sec == 'num']):
-
-                    new_strings = strings_provisional[inicio:i] + '_'
-                    seguencia = seguencia[1:]
+                    new_strings += strings_provisional[inicio:i] + '_'
+                    seguencia = [seguencia[-1]]
                     inicio = i
                 else:
                     if 2 < len(seguencia):
                         if 2 * 'min' == ''.join(seguencia[:-1]) and seguencia[-1] == 'may':
-                            new_strings = strings_provisional[inicio:i] + '_'
-                            seguencia = seguencia[2:]
+                            new_strings += strings_provisional[inicio:i] + '_'
+                            seguencia = [seguencia[-1]]
                             inicio = i
                         elif 2 * 'may' == ''.join(seguencia[:-1]) and seguencia[-1] == 'min':
-                            new_strings = strings_provisional[inicio:i] + '_'
-                            seguencia = seguencia[2:]
+                            new_strings += strings_provisional[inicio:i] + '_'
+                            seguencia = [seguencia[-1]]
                             inicio = i
                         else:
                             seguencia = seguencia[1:]
@@ -308,38 +309,41 @@ class latex:
         realizados = strings.split('_')
         if len(realizados) <= 1:
             realizados = []
-        for sub in sub_indices:
-            if sub in strings_provisional and len([1 for real in realizados if sub in real]) == 0:
-                realizados.append(sub)
-                new_strings = ''
-                inicio = 0
-                for i in range(len(sub),len(strings_provisional)):
-                    if strings_provisional[i-len(sub):i] == sub:
-                        if strings[i-1] != '_':
-                            new_strings += strings_provisional[inicio:i-len(sub)] + '_' + strings_provisional[i-len(sub):i]
-                            inicio = i
-                        if i < len(strings_provisional)-2:
-                            if strings[i+1] != '_':
-                                new_strings += '_'
-                new_strings += strings_provisional[inicio:]
-                strings_provisional = new_strings
+        if sub_indices != '':
+            for sub in sub_indices:
+                if sub in strings_provisional and len([1 for real in realizados if sub in real]) == 0:
+                    realizados.append(sub)
+                    new_strings = ''
+                    inicio = 0
+                    for i in range(len(sub),len(strings_provisional)):
+                        if strings_provisional[i-len(sub):i] == sub:
+                            if strings_provisional[i-1] != '_':
+                                new_strings += strings_provisional[inicio:i-len(sub)] + '_' + strings_provisional[i-len(sub):i]
+                                inicio = i
+                            if i < len(strings_provisional)-2:
+                                if strings_provisional[i+1] != '_':
+                                    new_strings += '_'
+                    new_strings += strings_provisional[inicio:]
+                    strings_provisional = new_strings
         
         # print(strings_provisional)
         return strings_provisional.replace('_','_{') + len([1 for i in strings_provisional if i == '_']) * '}'
     
     def var2latex(self):
         var_latex = []
+        # print(self.var)
         for var in self.var:
-            # print(var)
             try:
                 eval(var)
-                if var in ('1j','1i'):
+                if var in ['1j','1i']:
                     var_latex.append('i')
                 elif 'i' in var or 'j' in var:
                     var_latex.append(var.replace('i','') + ' * i')
                 else:
-                    var_latex(var)
+                    var_latex.append(var)
+                    # print(var)
             except:
+                # print([var])
                 var_latex.append(latex.acondicionar_var(strings = var, sub_indices = self.sub_indices))
 
         return var_latex
@@ -348,8 +352,8 @@ class latex:
         cifrado = []
         no_cifrado = []
 
-        no_cifrado += codigo_cifrado(strings = line_old,var = no_cifrado, var_cif = cifrado).extraer_variables()
-        cifrado += codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).codificar_variables()
+        no_cifrado = codigo_cifrado(strings = line_old,var = no_cifrado, var_cif = cifrado).extraer_variables()
+        cifrado = codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).codificar_variables()
         var_latex = latex(var = no_cifrado,sub_indices = sub_ind).var2latex()
         line_cif = codigo_cifrado(strings = line_old, var = no_cifrado, var_cif = cifrado).cifrar_line()
         segmentos = [line_cif]
@@ -444,8 +448,8 @@ class latex:
 # line_old = 'r = 50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 * (3+2)) ^ -5 ^ (7/(40 + 50)) + (88 + 99) / (100 +4) + 40 ^ 5'
 # line_old = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 ) ^ -5 ^ 7 + (88 + 99) / (100 +4) + 40 ^ 5'
 # line_old = 'zth3 = (z_t1 +z_g1) * (z_l+r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))) / ((z_t1 +z_g1) + (z_l +r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))))'
-# line_old = '((ar**2+r**2)/2)**0.5'
-# print('$$ ' + latex.code2latex(line_old, 'th,g,t') + ' $$')
+# line_old = 'Hola_Mundo12HggH = ((ar**2+r**2)/2)**0.5'
+# print('$$ ' + latex.code2latex(line_old,sub_ind='th') + ' $$')
 # ---------------------------------------------------------
 
     # 
