@@ -338,7 +338,7 @@ class latex:
                 if var in ['1j','1i']:
                     var_latex.append('i')
                 elif 'i' in var or 'j' in var:
-                    var_latex.append(var.replace('i','') + ' * i')
+                    var_latex.append(var.replace('i','').replace('j','') + ' * i')
                 else:
                     var_latex.append(var)
                     # print(var)
@@ -349,6 +349,15 @@ class latex:
         return var_latex
 
     def code2latex(line_old,sub_ind):
+        enter = False
+        # print([line_old])
+        if line_old == '':
+            return ''
+        if line_old[-1] == '\n':
+            enter = True
+            line_old = line_old[:-1]
+
+
         cifrado = []
         no_cifrado = []
 
@@ -442,6 +451,8 @@ class latex:
         # print(no_cifrado)
         # print(cifrado)
         # print(var_latex)
+        if enter:
+            line_cif += '\n'
         return line_cif
 
 # strings = '(5 * 3) ** 3 / (4 + 3)'
@@ -449,6 +460,7 @@ class latex:
 # line_old = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 ) ^ -5 ^ 7 + (88 + 99) / (100 +4) + 40 ^ 5'
 # line_old = 'zth3 = (z_t1 +z_g1) * (z_l+r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))) / ((z_t1 +z_g1) + (z_l +r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))))'
 # line_old = 'Hola_Mundo12HggH \n'
+# line_old = 'Z_L = 10 + 100j\n'
 # print('$$ ' + latex.code2latex(line_old,sub_ind='th') + ' $$')
 # ---------------------------------------------------------
 

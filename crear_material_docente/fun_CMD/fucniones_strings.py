@@ -1,5 +1,5 @@
 class linea:
-    def __init__(self, line, coment = '#', sep_enter = ' ,\t,\n', especiales = 'if,else,break,for,while'):
+    def __init__(self, line, coment = '#', sep_enter = ' ,\t,\n', especiales = 'if,else,break,for,while,def'):
         self.line = line
         self.coment = coment
         self.sep_enter = sep_enter
