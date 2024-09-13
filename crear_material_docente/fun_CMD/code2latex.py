@@ -3,14 +3,14 @@ import random
 class areglar_strings:
     def __init__(self, strings = '', operadores = '+,-,*,^,/,(,),='):
         self.strings = strings
-        self.operadores = operadores
+        self.operadores = ''.join(operadores.replace(' ','').replace('\t','').split(',')) + ','
     
     def eliminar_espacios_laterales(self):
         new_strings = self.strings
         # print([new_strings])
         if new_strings == '':
             return new_strings
-        for i in (self.operadores.replace(' ','').replace('\t','')).split(','):
+        for i in self.operadores:
             new_strings = new_strings.replace(i, ' ' + i + ' ')
         while True:
             if new_strings[0] == ' ':
@@ -35,7 +35,7 @@ class codigo_cifrado:
         self.var = var
         self.var_cif = var_cif
         self.otras_listas = otras_listas
-        self.operadores = operadores.replace(' ','').replace('\t','').split(',')
+        self.operadores = ''.join(operadores.replace(' ','').replace('\t','').split(',')) + ','
 
     def acondicionar_strings(self):
         return self.strings.replace('\t','').replace(' ','')
@@ -109,11 +109,11 @@ class acondicionar_operaciones:
             var_cif = var_cif.replace(' ','').replace('\t', '').split(',')
         self.var = var
         self.var_cif = var_cif
-        self.operadores = operadores
+        self.operadores = ''.join(operadores.replace(' ','').replace('\t','').split(',')) + ','
 
     def eliminar_espacios_laterales(self):
         new_strings = self.strings
-        for i in (self.operadores.replace(' ','').replace('\t','')).split(','):
+        for i in self.operadores:
             new_strings = new_strings.replace(i, ' ' + i + ' ')
         while True:
             if new_strings[0] == ' ':
@@ -460,7 +460,7 @@ class latex:
 # line_old = '50 / 130 * 5 * 3 ^ 2 / 4 / 7 + 6 / 8 / 9 + 129 ^ (3 + 4 + 5 ) ^ -5 ^ 7 + (88 + 99) / (100 +4) + 40 ^ 5'
 # line_old = 'zth3 = (z_t1 +z_g1) * (z_l+r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))) / ((z_t1 +z_g1) + (z_l +r_c*(z_t2+z_g2)/(r_c + (z_t2+z_g2))))'
 # line_old = 'Hola_Mundo12HggH \n'
-# line_old = 'Z_L = 10 + 100j\n'
+# line_old = "encontrar_valor_tabla_1('Seccion nominal','Canal protectora',A_delta_V)"
 # print('$$ ' + latex.code2latex(line_old,sub_ind='th') + ' $$')
 # ---------------------------------------------------------
 

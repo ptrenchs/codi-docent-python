@@ -109,7 +109,8 @@ class Material:
                             new_lines.append(com + v_i + v_v )
                             new_lines_m.append(com + '$$ ' + code2latex.latex.code2latex(v_i + v_v,sub_ind=self.sub_indice) + ' $$')
                     # print(new_lines)
-                    datos_respuestas['cells'][-1]['source'] = new_lines
+                    if not funciones_def:
+                        datos_respuestas['cells'][-1]['source'] = new_lines
                     while True:
                         new_id_s = str(uuid.uuid4())
                         if new_id_s not in id_s:
@@ -128,9 +129,10 @@ class Material:
                             new_lines_m[i] = new_lines_m[i].replace('\n','') + '\n'
                         new_lines_m[i] = new_lines_m[i].replace('#','')
                     # print(new_lines_m)
-                    if ''.join(new_lines_m).replace('\n','')!='' and not funciones_def:
+                    if ''.join(new_lines_m).replace('\n','')!='' and not funciones_def and 'pd.read' not in ''.join(new_lines_m).replace('\n',''):
                         # print(new_lines_m)
                         datos_respuestas['cells'] = datos_respuestas['cells'][:-1] + [{"cell_type": "markdown","id": new_id_s,"metadata": {},"source": new_lines_m}] + [datos_respuestas['cells'][-1]]
+                    
 
 
 
